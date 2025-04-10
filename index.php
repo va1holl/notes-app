@@ -42,7 +42,7 @@ $query_select_notes = "SELECT * FROM notes ORDER BY created_at DESC LIMIT 10";
 $result_select_notes = pg_query($conn, $query_select_notes);
 
 if (!$result_select_notes) {
-    echo "<p>Ошибка при получении заметок: " . pg_last_error() . "</p>";
+    echo "<p>ошибка селекта" . pg_last_error() . "</p>";
 }
 
 ?>
