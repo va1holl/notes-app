@@ -1,0 +1,1 @@
+@php "C:\ProgramData\ComposerSetup\composer.phar" %*
