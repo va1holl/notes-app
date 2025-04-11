@@ -21,12 +21,8 @@ if (!$conn) {
     die("Connection failed: " . pg_last_error());
 }
 
-
-
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['note'])) {
     $note = pg_escape_string($conn, $_POST['note']);
-
-
     $query = "INSERT INTO notes (content) VALUES ('$note')";
     $result = pg_query($conn, $query);
 
@@ -37,6 +33,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['note'])) {
     }
 }
 
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_id'])) {
+    $delete_id = (int)$_POST['delete_id']; // Преобразуем ID в число, чтобы предотвратить SQL-инъекции
+    $query_delete = "DELETE FROM notes WHERE id = $delete_id";
+    $result_delete = pg_query($conn, $query_delete);
+
+    if ($result_delete) {
+        echo "<p>Заметка удалена</p>";
+    } else {
+        echo "<p>ошибка удаления: " . pg_last_error() . "</p>";
+    }
+}
 
 $query_select_notes = "SELECT * FROM notes ORDER BY created_at DESC LIMIT 10";
 $result_select_notes = pg_query($conn, $query_select_notes);
@@ -44,7 +51,6 @@ $result_select_notes = pg_query($conn, $query_select_notes);
 if (!$result_select_notes) {
     echo "<p>ошибка селекта" . pg_last_error() . "</p>";
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -66,13 +72,19 @@ if (!$result_select_notes) {
 
 if (pg_num_rows($result_select_notes) > 0) {
     while ($row = pg_fetch_assoc($result_select_notes)) {
-        echo "<div><strong>" . htmlspecialchars($row['created_at']) . "</strong><br>";
-        echo htmlspecialchars($row['content']) . "</div><hr>";
+        echo "<div><strong>ID: " . htmlspecialchars($row['id']) ." | " . htmlspecialchars($row['created_at']) . "</strong><br>";
+        echo htmlspecialchars($row['content']) . "<br>";
+
+        echo "<form action='' method='POST'>
+                <input type='hidden' name='delete_id' value='" . htmlspecialchars($row['id']) . "'>
+                <input type='submit' value='Удалить'>
+              </form>";
+
+        echo "</div><hr>";
     }
 } else {
     echo "<p>Пусто</p>";
 }
-
 
 pg_close($conn);
 ?>
